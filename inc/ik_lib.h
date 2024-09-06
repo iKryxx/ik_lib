@@ -710,12 +710,15 @@ inline bool ik_cursor_show(void)
 extern u8 SCREEN_WIDTH, SCREEN_HEIGHT;
 extern char SCREEN_BACKGROUND;
 extern ik_array SCREEN_BUFFER;
+extern bool SCREEN_UPDATE;
+extern int TICKRATE;
 
-extern void ik_screen_init(u8 width, u8 height, char background);
+extern void ik_screen_init(u8 width, u8 height, char background, int máx_tick_rate);
 extern void ik_screen_set_pixels(ik_array pixels);
 extern void ik_screen_set_pixel(u8 x, u8 y, char to, color foreground, color background);
 extern void ik_screen_print();
 extern void ik_screen_clear_screen();
+
 
 #pragma endregion
 
@@ -741,7 +744,7 @@ extern bool ik_compare_byte(void* a, void* b);
  * @brief sleeps for a given amount of time
  * @param[in] milliseconds the time to sleep in milliseconds
  */
-extern void ik_sleep(u64 milliseconds);
+extern void ik_sleep(i64 milliseconds);
 #pragma endregion
 
 #pragma region Input

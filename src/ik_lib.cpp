@@ -1236,6 +1236,8 @@ bool ik_compare_byte(void* a, void* b)
 u8 SCREEN_WIDTH, SCREEN_HEIGHT = 0; 
 char SCREEN_BACKGROUND = ' ';
 ik_array SCREEN_BUFFER = {};
+bool SCREEN_UPDATE = false;
+int TICKRATE = 0;
 
 //helper functions
 ik_string *GET_PIXEL(int x, int y) {
@@ -1244,10 +1246,11 @@ ik_string *GET_PIXEL(int x, int y) {
 //end !helper functions
 
 
-void ik_screen_init(u8 width, u8 height, char background){
+void ik_screen_init(u8 width, u8 height, char background, int max_tick_rate){
     SCREEN_WIDTH = width;
     SCREEN_HEIGHT = height;
     SCREEN_BACKGROUND = background;
+    TICKRATE = max_tick_rate;
     ik_array_make(&SCREEN_BUFFER, 2 * sizeof(u64), height * width);
     ik_string curr = { };
     for (size_t i = 0; i < height * width; i++)
@@ -1258,6 +1261,7 @@ void ik_screen_init(u8 width, u8 height, char background){
     }
     ik_clrscr();
     printf("\n");
+    SCREEN_UPDATE = true;
 }
 
 void ik_screen_set_pixels(ik_array pixels){
@@ -1286,9 +1290,13 @@ void ik_screen_set_pixel(u8 x, u8 y, char to, color foreground, color background
     formatted[6] = to;
     formatted[13] = '\0';
     ik_string *ref = GET_PIXEL(x, y);
-    ik_string_replace_index(ref, 0, 0, (char*)formatted);
+    //if(ref->cstring[0] != SCREEN_BACKGROUND)
+    ik_string_replace_index(ref, 0, ref->size - 1, (char*)formatted);
 }
+clock_t tick_t;
 void ik_screen_print(){
+    tick_t = clock();
+    SCREEN_UPDATE = false;
     ik_cursor_hide();
     //ik_clrscr();
     ik_move_cursor_up(SCREEN_HEIGHT);
@@ -1303,10 +1311,14 @@ void ik_screen_print(){
         }
         ik_move_cursor_down(1);
         ik_move_cursor_left(SCREEN_WIDTH);
-        fflush(stdout);
+        //fflush(stdout);
     }
     ik_cursor_show();
-    //fflush(stdout);
+    tick_t = clock() - tick_t;
+    double time_taken = ((double)tick_t) / CLOCKS_PER_SEC;
+    ik_sleep((1000/TICKRATE) - time_taken * 1000);
+    SCREEN_UPDATE = true;
+    fflush(stdout);
 }
 void ik_screen_clear_screen(){
     for (size_t y = 0; y < SCREEN_HEIGHT; y++)
@@ -1327,8 +1339,9 @@ void ik_screen_clear_screen(){
 
 #pragma region Sleep
 
-void ik_sleep(u64 milliseconds)
+void ik_sleep(i64 milliseconds)
 {
+    if (milliseconds < 0) return;
 #ifdef _WIN32
 	Sleep(milliseconds);
 #else
@@ -1345,7 +1358,7 @@ ik_array input_events;
 
 void ik_init_input() {
     input_events = { };
-    ik_array_make(&input_events, 3 * sizeof(bool), 25); //-65!!
+    ik_array_make(&input_events, 3 * sizeof(bool), 25); 
     ik_input a = { };
     ik_array_append(&input_events, &a);
     for (size_t i = 0; i <= 25; i++)

@@ -486,6 +486,14 @@ extern void* ik_array_get(ik_array* thisptr, u32 i);
 extern void ik_swap(void *src, void *dst, u64 size);
 
 /**
+* @brief sets an element in the array
+ * @param[in,out] thisptr the array to set the element in
+ * @param[in] index the index of the element to set
+ * @param[in] object the object to set
+ */
+extern void ik_array_set(ik_array* thisptr, u32 index, void* object);
+
+/**
 * @brief checks if an array contains a specific object
  * @param[in] thisptr the array to check
  * @param[in] object the object to find

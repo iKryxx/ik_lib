@@ -1023,6 +1023,20 @@ bool ik_array_contains(ik_array* thisptr, void* object, compare_callback compara
 	return false;
 }
 
+void ik_array_set(ik_array* thisptr, u32 index, void* object)
+{
+	if (index >= thisptr->size)
+	{
+		return;
+	}
+
+	memcpy(
+		((byte*)thisptr->data) + index * thisptr->stride,
+		object,
+		thisptr->stride
+	);
+}
+
 #pragma endregion
 
 #pragma region Parsers
@@ -1401,10 +1415,6 @@ void ik_update_input() {
             p->held = false;
             p->released = false;
         }
-        // if (p->pressed) printf("\n[%c]: Pressed.              ", ch + 65);
-        // else if (p->held) printf("\n[%c]: Held.               ", ch + 65);
-        // else if (p->released) printf("\n[%c]: Released.       ", ch + 65);
-        // else printf("\n[%c]:                                  ", ch + 65);
     }
 }
 

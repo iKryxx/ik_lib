@@ -1458,3 +1458,206 @@ bool ik_get_key_state(char ch, ik_key_state state) {
 
 #pragma endregion
 
+#pragma region Field
+ik_array FIELDS = { };
+
+void ik_field_make(ik_array* scope, const char* _name, ik_field_type _type, const char* _value) {
+    if (strlen(_name) == 0 || strlen(_value) == 0) return;
+    ik_array* _this = ik_array_is_null(scope) ? &FIELDS : scope;
+
+    bool RETURN_WRONG_TYPE = false;
+
+    switch (_type)
+    {
+    case TYPE_INTEGER:
+        if (!ik_is_int((char*)_value))
+            RETURN_WRONG_TYPE = true;
+        break;
+    case TYPE_BOOL:
+        if (_value != "false" && _value != "true")
+            RETURN_WRONG_TYPE = true;
+        break;
+    case TYPE_DOUBLE:
+        if (!ik_is_numeric((char*)_value))
+            RETURN_WRONG_TYPE = true;
+        break;
+    case TYPE_CHAR:
+        if (strlen(_value) != 1)
+            RETURN_WRONG_TYPE = true;
+        break;
+    default:
+        break;
+    }
+
+    if (RETURN_WRONG_TYPE) {
+        printf("[Type Missmatch]: Tried to assign variable '%s' to a wrong type.", _name);
+        exit(-1);
+    }
+
+    if (ik_array_is_null(_this)) {
+        ik_array_make(_this, sizeof(ik_field), 10);
+    }
+    else {
+        for (int i = 0; i < _this->size; i++) {
+            ik_field* curr = (ik_field*)ik_array_get(_this, i);
+            if (curr->Name != _name) continue;
+            printf("Tried to initialize already existing variable %s!", curr->Name);
+        }
+    }
+
+    int _struct_size = sizeof(char*) + sizeof(char*) + sizeof(ik_field_type) + sizeof(u8);
+    int _value_size = strlen(_value) + sizeof(char);
+
+    ik_field _new_field = *(ik_field*)malloc(_struct_size);
+
+    _new_field.Name = (char*)malloc(strlen(_name) + sizeof(char));
+    memcpy(_new_field.Name, _name, strlen(_name) + sizeof(char));
+
+    _new_field.Value = (char*)malloc(_value_size);
+    memcpy(_new_field.Value, _value, _value_size);
+
+    _new_field.Type = _type;
+    _new_field.Size = _value_size;
+
+    ik_array_append(_this, &_new_field);
+}
+
+void ik_field_set(ik_array* scope, const char* _name, const char* _value) {
+    ik_array* _this = ik_array_is_null(scope) ? &FIELDS : scope;
+
+
+
+    for (int i = 0; i < _this->size; i++) {
+        ik_field* _curr = (ik_field*)ik_array_get(_this, i);
+        if (strcmp(_curr->Name, _name) != 0) continue;
+
+        bool RETURN_WRONG_TYPE = false;
+        switch (_curr->Type)
+        {
+        case TYPE_INTEGER:
+            if (!ik_is_int((char*)_value))
+                RETURN_WRONG_TYPE = true;
+            break;
+        case TYPE_BOOL:
+            if (_value != "false" && _value != "true")
+                RETURN_WRONG_TYPE = true;
+            break;
+        case TYPE_DOUBLE:
+            if (!ik_is_numeric((char*)_value))
+                RETURN_WRONG_TYPE = true;
+            break;
+        case TYPE_CHAR:
+            if (strlen(_value) != 1)
+                RETURN_WRONG_TYPE = true;
+            break;
+        default:
+            break;
+        }
+
+        if (RETURN_WRONG_TYPE) {
+            printf("[Type Missmatch]: Tried to assign variable '%s' to a wrong type.", _name);
+            exit(-1);
+        }
+
+        int _new_size = strlen((char*)_value) + sizeof(char);
+        free(_curr->Value);
+        _curr->Value = (char*)malloc(_new_size);
+        memcpy(_curr->Value, _value, _new_size);
+        _curr->Size = _new_size;
+    }
+}
+
+char* ik_field_get_raw(ik_array* scope, const char* name) {
+    ik_array* _this = ik_array_is_null(scope) ? &FIELDS : scope;
+
+    for (int i = 0; i < _this->size; i++) {
+        ik_field* _curr = (ik_field*)ik_array_get(_this, i);
+        if (strcmp(_curr->Name, name) == 0)
+            return _curr->Value;
+    }
+    return NULL;
+}
+
+void* ik_field_get(ik_array* scope, const char* name) {
+    ik_array* _this = ik_array_is_null(scope) ? &FIELDS : scope;
+
+    int parsed_i = 0;
+    bool parsed_b = false;
+    double parsed_d = 0;
+    char parsed_c = 0;
+    for (int i = 0; i < _this->size; i++) {
+        ik_field* _curr = (ik_field*)ik_array_get(_this, i);
+        if (strcmp(_curr->Name, name) != 0) continue;
+        ik_string temp = { };
+
+        switch (_curr->Type)
+        {
+        case TYPE_INTEGER:
+            parsed_i = 0;
+            parsed_i = atoi(_curr->Value);
+            return (void*)&parsed_i;
+            break;
+        case TYPE_BOOL:
+            parsed_b = _curr->Value == "true";
+            return (void*)&parsed_b;
+            break;
+        case TYPE_DOUBLE:
+            parsed_d = 0;
+            ik_string_make(&temp, _curr->Value);
+            ik_parser_parse_as_double(&temp, &parsed_d);
+            ik_string_destroy(&temp);
+            return (void*)&parsed_d;
+            break;
+        case TYPE_CHAR:
+            parsed_c = 0;
+            parsed_c = atoi(_curr->Value);
+            return (void*)&parsed_c;
+            break;
+        default:
+            return (void*)_curr->Value;
+            break;
+        }
+
+    }
+    return NULL;
+}
+
+ik_array ik_field_filter(ik_array* scope, bool (*condition)(ik_field*)) {
+    ik_array FILTERED = { };
+    ik_array_make(&FILTERED, sizeof(ik_field), 10);
+
+    ik_array* _this = ik_array_is_null(scope) ? &FIELDS : scope;
+    for (int i = 0; i < _this->size; i++) {
+        ik_field* curr = (ik_field*)ik_array_get(_this, i);
+        if (condition(curr)) ik_array_append(&FILTERED, curr);
+    }
+    return FILTERED;
+}
+ik_array ik_field_filter_recursive(const int layers, ik_array* scope, bool (*condition)(ik_field*)) {
+    ik_array FILTERED = { };
+    ik_array_make(&FILTERED, sizeof(ik_field), 10);
+
+    if (layers == 1) {
+        for (size_t i = 0; i < scope->size; i++)
+        {
+            ik_field* curr = (ik_field*)ik_array_get(scope, i);
+            if (condition(curr)) ik_array_append(&FILTERED, curr);
+        }
+        return FILTERED;
+    }
+    for (size_t i = 0; i < scope->size; i++)
+    {
+        ik_array* _curr = (ik_array*)ik_array_get(scope, i);
+        ik_array rec_filtered = ik_field_filter_recursive(layers - 1, _curr, condition);
+        for (size_t i = 0; i < rec_filtered.size; i++)
+        {
+            ik_field* curr = (ik_field*)ik_array_get(&rec_filtered, i);
+            ik_array_append(&FILTERED, curr);
+        }
+        ik_array_destroy(&rec_filtered);
+    }
+    return FILTERED;
+}
+
+
+#pragma endregion

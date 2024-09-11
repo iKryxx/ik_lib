@@ -81,6 +81,20 @@ typedef struct {
     bool released;
 } ik_input;
 
+typedef enum {
+    TYPE_INTEGER,
+    TYPE_BOOL,
+    TYPE_DOUBLE,
+    TYPE_CHAR,
+    TYPE_STRING,
+} ik_field_type;
+
+typedef struct {
+    char* Name;
+    char* Value;
+    ik_field_type Type;
+    u8 Size;
+} ik_field;
 
 typedef enum{
     none,
@@ -790,6 +804,18 @@ extern void ik_set_input_type(ik_input_type type);
 extern void ik_update_input();
 extern bool ik_get_key_state(char ch, ik_key_state state);
 
+#pragma endregion
+
+#pragma region Field
+#define ik_create_scope(x) ik_array_make(&x, sizeof(ik_field), 1);
+
+
+extern void ik_field_make(ik_array* scope, const char* _name, ik_field_type _type, const char* _value);
+extern void ik_field_set(ik_array* scope, const char* _name, const char* value);
+extern void* ik_field_get(ik_array* scope, const char* name);
+extern char* ik_field_get_raw(ik_array* scope, const char* name);
+extern ik_array ik_field_filter(ik_array* scope, bool (*condition)(ik_field*));
+extern ik_array ik_field_filter_recursive(const int layers, ik_array* scope, bool (*condition)(ik_field*));
 #pragma endregion
 
 

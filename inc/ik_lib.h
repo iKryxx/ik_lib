@@ -18,6 +18,8 @@
 
 #define FLT_MIN 0.001f
 
+#define NULL_ARRAY { }
+
 #pragma endregion
 
 #pragma region Types
@@ -415,6 +417,8 @@ typedef enum
     desc /**< Descending */
 } ik_array_sort_mode;
 
+extern bool ik_array_is_null(const ik_array *_this);
+
 /**
  * @brief Creates a dynamically growing array from the given parameters
  * @param[in,out] array is the array base memory to be managed
@@ -536,7 +540,7 @@ extern bool ik_parser_parse_as_int(ik_string *text, int *out_number);
  * @param[in,out] out_number the number to parse to
  * @returns true if successful, false if noty
  */
-extern bool ik_parser_parse_as_float(ik_string *text, float *out_number);
+extern bool ik_parser_parse_as_double(ik_string *text, double *out_number);
 
 #pragma endregion
 

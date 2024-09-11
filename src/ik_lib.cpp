@@ -781,7 +781,7 @@ bool ik_read_string(ik_string *string, int max_len, type_options type, int *retu
 
     if (strlen(buffer) == max_len)
     {
-        *return_code == 2;
+        *return_code = 2;
         return false;
     }
     if (type == type_options::_string)
@@ -852,6 +852,10 @@ extern void ik_string_append(ik_string* in, const char* append)
 #pragma endregion
 
 #pragma region Array
+
+bool ik_array_is_null(const ik_array* _this) {
+    return _this == 0 || _this->data == 0;
+}
 
 void ik_array_make(ik_array *ik_array, u64 stride_size, u64 num_elements)
 {
@@ -1083,7 +1087,7 @@ bool ik_parser_parse_as_int(ik_string *text, int *out_number)
     return true;
 }
 
-bool ik_parser_parse_as_float(ik_string *text, float *out_number)
+bool ik_parser_parse_as_double(ik_string *text, double *out_number)
 {
     *out_number = 0;
 
@@ -1105,7 +1109,7 @@ bool ik_parser_parse_as_float(ik_string *text, float *out_number)
 
     if (!ik_is_numeric(text->cstring))
         return false;
-    float out = (float)atof(fixed_comma.cstring);
+    double out = (double)atof(fixed_comma.cstring);
     *out_number = out;
     return true;
 }

@@ -6,6 +6,22 @@
 
 #pragma region Math
 
+#define FNV_PRIME 1099511628211llu
+#define FNV_OFFSET 14695981039346656037llu
+
+i64 ik_fnv1a(byte* data, u64 length)
+{
+	u64 hash = FNV_OFFSET;
+
+	for (u64 i = 0; i < length; i++)
+	{
+		hash ^= data[i];
+		hash *= FNV_PRIME;
+	}
+
+	return hash;
+}
+
 i64 ik_abs(i64 a)
 {
 	return (a < 0) * -a + (a >= 0) * a;
@@ -1057,6 +1073,17 @@ void ik_array_set(ik_array* thisptr, u32 index, void* object)
 		object,
 		thisptr->stride
 	);
+}
+
+#pragma endregion
+
+#pragma region Dictionary
+
+void ik_dictionary_make(ik_dictionary* dictionary, u64 key_size, u64 capacity)
+{
+	ik_array_make(&dictionary->kvp_array, key_size, capacity);
+	dictionary->capacity = capacity;
+	dictionary->size = 0;
 }
 
 #pragma endregion

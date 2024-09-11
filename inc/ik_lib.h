@@ -153,6 +153,21 @@ if (x != 0)             \
 #pragma region Math
 
 /**
+* @brief FNV1a Hash Function
+* @param[in] bytearray the byte array to hash
+* @param[in] length the length of the byte array
+* @return the hash value
+*/
+extern i64 ik_fnv1a(byte* data, u64 length);
+
+/**
+* @brief abs Function
+* @param[in] a Number
+* @return the absolute value of the number
+*/
+extern i64 ik_abs(i64 a);
+
+/**
 * @brief min Function
 * @param[in] a First Number
 * @param[in] b Second Number
@@ -528,6 +543,33 @@ extern void ik_array_set(ik_array* thisptr, u32 index, void* object);
  * @returns true if the object is found, false if not
  */
 extern bool ik_array_contains(ik_array* thisptr, void* object, compare_callback comparator);
+
+#pragma endregion
+
+#pragma region Dictionary
+
+typedef struct
+{
+	void* key;
+	void* value;
+	u64 key_size;
+	u64 value_size;
+} ik_key_value_pair;
+
+typedef struct
+{
+	ik_array kvp_array;
+	u64 capacity;
+	u64 size;
+} ik_dictionary;
+
+/**
+ * @brief Creates a dictionary from the given parameters
+ * @param[in,out] dictionary is the dictionary base memory to be managed
+ * @param[in] capacity represents the desired number of elements to be preallocated
+ * @note This function creates memory on the heap. Call ik_dictionary_destroy to free mem at the end of its life-time.
+ */
+extern void ik_dictionary_make(ik_dictionary* dictionary, u64 key_size, u64 capacity);
 
 #pragma endregion
 

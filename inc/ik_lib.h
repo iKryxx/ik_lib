@@ -213,7 +213,7 @@ typedef struct                            \
 } stringify(funcname)_params;             \
 
 typedef void(*measure_callback)(void*);
-extern void ik_measure_time (char* name, void* params, measure_callback cb);
+extern void ik_measure_time (const char* name, void* params, measure_callback cb);
 #pragma endregion
 
 #pragma region String
@@ -435,6 +435,7 @@ extern void ik_array_make(ik_array *ik_array, u64 stride_size, u64 num_elements)
  * @note This does not delete the object itself. It just removes all managed heap memory data and clears their assoc. vars.
  */
 extern void ik_array_destroy(ik_array* ik_array);
+
 /**
  * @brief Appends to the given array another element.
  * @param[in,out] array is the array to append to
@@ -442,6 +443,14 @@ extern void ik_array_destroy(ik_array* ik_array);
  * @note If there's no more memory available within the array, it grows linearily by 10 elements.
  */
 extern void ik_array_append(ik_array* thisptr, void* object);
+
+/**
+ * @brief Fills the array with a value.
+ * @param[in,out] array is the array to fill
+ * @param[in] object is the value
+ * @note If there's no more memory available within the array, it grows linearily by 10 elements.
+ */
+extern void ik_array_fill(ik_array* thisptr, void* object);
 
 /**
  * @brief Removes an element from the given array

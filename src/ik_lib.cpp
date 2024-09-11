@@ -30,6 +30,7 @@ const double LN2 = 0.6931471805599453; // ln(2)
 const int NEWTON_MAX_IT = 100; // Maximum iterations for Newton's method
 const double EPSILON = 1e-10; // Precision threshold
 const int INFINITY = 1e9; // Infinity value
+const double GOLDEN_RATIO = 1.6180339887; // Golden ratio
 
 double ik_exp(double x)
 {
@@ -152,11 +153,11 @@ bool ik_read_input(char *buffer, i32 bufferLength)
 }
 
 
-void ik_measure_time (char* name, void* params, measure_callback cb) {
+void ik_measure_time (const char* name, void* params, measure_callback cb) {
     clock_t t;
     ik_string stripe, profiling, time = { };
     ik_string_make(&stripe, "<a>------------------------------------------------------------\n");
-    char* _p = (char*)malloc(strlen(name) + 16);
+    char* _p = (char*)malloc(strlen(name) + sizeof(char) + 19);
     sprintf(_p, "[%s] <k>Profiling...\n", name);
 
     ik_string_make(&profiling, _p);
@@ -185,10 +186,13 @@ void ik_measure_time (char* name, void* params, measure_callback cb) {
     sprintf(_t, "<l>took %.4fs\n", time_taken);
     ik_string_make(&time, _t);
 
-    ik_print_string(&time, reserve_space_options::reserve_cut, 60 - (int)strlen(name) + 4, align_options::align_right);
+    ik_print_string(&time, reserve_space_options::reserve_cut, 58 - (int)strlen(name), align_options::align_right);
     ik_cursor_load_pos();
     printf("\n");
 
+    ik_string_destroy(&stripe);
+    ik_string_destroy(&profiling);
+    ik_string_destroy(&time);
     free(_p);
 }
 
@@ -503,6 +507,14 @@ void get_subcolors(ik_string* in, ik_array *out) {
 
     int _old_end = -1; int _old_begin = 0;
     int begin, end;
+
+    if (found_exps.size != 0 && *(int*)ik_array_get(&found_exps, 0) != 0) {
+        _old_end = *(int*)ik_array_get(&found_exps, 0);
+        ik_string _curr = { };
+        ik_string_make_range(&_curr, in->cstring, _old_begin, 0);
+        ik_array_append(out, (void*)&_curr);
+        _old_begin = 0;
+    }
     for (size_t i = 0; i < found_exps.size; i += 2)
     {
         begin = *(int*)ik_array_get(&found_exps, (u32)i);
@@ -896,7 +908,7 @@ void ik_array_append(ik_array* thisptr, void* object)
 {
     if (thisptr->capacity <= thisptr->size)
     {
-        ik_array_grow(thisptr, ik_log(2 + thisptr->size));
+        ik_array_grow(thisptr, GOLDEN_RATIO * thisptr->size);
     }
 
     memcpy(
@@ -904,6 +916,12 @@ void ik_array_append(ik_array* thisptr, void* object)
         object,
         thisptr->stride
     );
+}
+
+void ik_array_fill(ik_array* thisptr, void* object) {
+    for (int i = 0; i < thisptr->capacity; i++) {
+        ik_array_set(thisptr, i, object);
+    }
 }
 
 void ik_array_remove(ik_array *thisptr, u32 index)

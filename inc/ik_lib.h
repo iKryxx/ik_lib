@@ -339,7 +339,7 @@ extern void ik_string_replace_index(ik_string* in, int start, int end, char* rep
  * @param[in] find the string to find
  * @returns the starting index if the string to find is found, -1 if not
  */
-extern int ik_string_contains(ik_string* in, char* find);
+extern int ik_string_contains(ik_string* in, const char* find);
 
 /**
  * @brief checks if a string contains a character
@@ -369,7 +369,7 @@ extern void ik_string_set_at(ik_string* in, int i, char to);
  * @param[in, out] in the string to manipulate
  * @param[in] to the string to remove
  */
-extern void ik_string_remove(ik_string* in, char* find);
+extern void ik_string_remove(ik_string* in, const char* find);
 
 /**
  * @brief removes a string from another string, same as calling ik_string_replace(in, find, "")

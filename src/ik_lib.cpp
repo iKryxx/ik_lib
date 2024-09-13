@@ -382,7 +382,7 @@ void ik_string_replace_index(ik_string* in, int start, int end, char* replace){
 }
 
 
-int ik_string_contains(ik_string *in, char *find)
+int ik_string_contains(ik_string *in, const char *find)
 {
     for (int i = 0; i < in->size; i++)
     {
@@ -427,7 +427,7 @@ void ik_string_set_at(ik_string* in, int i, char to){
     in->cstring[i] = to;
 }
 
-void ik_string_remove(ik_string *in, char *find)
+void ik_string_remove(ik_string *in, const char *find)
 {
     int index = ik_string_contains(in, find);
     if (index == -1)
@@ -805,9 +805,11 @@ bool ik_read_string(ik_string *string, int max_len, type_options type, int *retu
 {
     char Newline[] = "\n";
     char* buffer = (char*)malloc(max_len);
+    
     fgets(buffer, max_len + 1, stdin);
+    ik_string_remove(string, Newline);
 
-    if (strlen(buffer) == max_len)
+    if (string->size > max_len)
     {
         *return_code = 2;
         return false;
@@ -815,21 +817,18 @@ bool ik_read_string(ik_string *string, int max_len, type_options type, int *retu
     if (type == type_options::_string)
     {
         ik_string_make(string, buffer);
-        ik_string_remove(string, Newline);
         *return_code = 1;
         return true;
     }
     else if (type == type_options::_float && ik_is_numeric(buffer))
     {
         ik_string_make(string, buffer);
-        ik_string_remove(string, Newline);
         *return_code = 1;
         return true;
     }
     else if (type == type_options::_int && ik_is_int(buffer))
     {
         ik_string_make(string, buffer);
-        ik_string_remove(string, Newline);
         *return_code = 1;
         return true;
     }

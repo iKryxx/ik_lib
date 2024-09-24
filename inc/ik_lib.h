@@ -132,7 +132,7 @@ typedef struct {
 #pragma region Clear Screen Logic
 
 #ifdef _WIN32
-    #define ik_clrscr() system("cls")
+    #define ik_clrscr() fflush(stdin); fflush(stdout); system("cls")
 #else
     #define ik_clrscr() printf("\e[1;1H\e[2J")
 #endif
@@ -147,6 +147,10 @@ if (x != 0)             \
     free(x);            \
     x = 0;              \
 }
+
+#define WAITENTERPRESS()\
+while(getchar()!='\n')  \
+    getchar();          \
 
 #pragma endregion
 

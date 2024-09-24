@@ -804,31 +804,65 @@ void ik_print_string(ik_string* in, reserve_space_options reserve, int spaces, a
 bool ik_read_string(ik_string *string, int max_len, type_options type, int *return_code)
 {
     char Newline[] = "\n";
-    char* buffer = (char*)malloc(max_len);
-    
-    fgets(buffer, max_len + 1, stdin);
-    ik_string_remove(string, Newline);
+    // 3 because: possible newline, null terminator and one overflow to detect to long input
+    char* buffer = (char*)malloc(max_len+3); 
+    int extra = 0;
+    char ch = 0;
 
+    fgets(buffer, max_len+3, stdin);
+
+    if (buffer[strlen(buffer) - 1] != '\n') {
+        extra = 0;
+        while (((ch = getchar()) != '\n') && (ch != EOF))
+            extra = 1;
+
+        if (extra == 1) { //too long
+            *return_code = 2;
+
+            free(buffer);
+            return false;
+        }
+        if (strlen(buffer) > max_len) {
+            *return_code = 2;
+
+            free(buffer);
+            return false;
+        }
+    }
+    buffer[strlen(buffer) - 1] = '\0';
+
+    ik_string_make(string, buffer);
+    
     if (string->size > max_len)
     {
         *return_code = 2;
+        free(buffer);
         return false;
     }
     if (type == type_options::_string)
     {
         ik_string_make(string, buffer);
+        ik_string_remove(string, Newline);
         *return_code = 1;
+
+        free(buffer);
         return true;
     }
     else if (type == type_options::_float && ik_is_numeric(buffer))
     {
         ik_string_make(string, buffer);
+        ik_string_remove(string, Newline);
         *return_code = 1;
+
+        free(buffer);
         return true;
     }
-    else if (type == type_options::_int && ik_is_int(buffer))
-    {
+    else if (type == type_options::_int && ik_is_int(buffer)) {
+
         ik_string_make(string, buffer);
+        ik_string_remove(string, Newline);
+        
+        free(buffer);
         *return_code = 1;
         return true;
     }

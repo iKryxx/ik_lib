@@ -416,8 +416,7 @@ void ik_string_set(ik_string *in, ik_string *to)
 {
     ik_string_destroy(in);
 
-    in->cstring = to->cstring;
-    in->size = to->size;
+    ik_string_make(in, to->cstring);
 }
 
 void ik_string_set_at(ik_string* in, int i, char to){
